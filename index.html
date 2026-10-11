@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Find X 2.0</title>
+    <style>
+      html,body{
+        background: #000;
+        font-family: monospace;
+        color: #fff;
+        overflow: hidden;
+      }
+      #header{
+        height: 40px;
+        background: linear-gradient(90deg,#204,#048,#402);
+        text-align: center;
+        font-size: 34px;
+        text-shadow: #fff 0px 0px 5px;
+      }
+      #headerText{
+        transform: scaleX(2.0);
+        display: inline-block;
+      }
+      input[type=text]:focus{
+        outline: none;
+      }
+      input[type=text]{
+        border-radius: 5px;
+        font-size: 32px;
+        width: 500px;
+        border: 1px solid #4f84;
+        background: #000;
+        padding-left: 20px;
+        padding-right: 20px;
+        color: #fa1;
+      }
+      .inputContainer{
+        width: 550px;
+        color: #488;
+        left: 50%;
+        position: absolute;
+        top: calc(50% - 50px);
+        transform: translate(-50%, -50%);
+        font-size: 24px;
+        text-align: left;
+      }
+      .main{
+        text-align: center;
+        background: #112;
+        height: calc(100vh - 40px);
+      }
+      #outputContainer{
+        padding: 20px;
+        display: none;
+        width: 550px;
+        color: #488;
+        left: 50%;
+        box-sizing: border-box;
+        border: 1px solid red;
+        position: absolute;
+        top: calc(50% + 80px);
+        transform: translate(-50%, -50%);
+        font-size: 24px;
+        text-align: left;
+        white-space: pre;
+        pre:
+        border-radius: 5px;
+        background: #000;
+        border: 1px solid #ff03;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header">
+      <span id="headerText">find x</span>
+    </div>
+    <div class="main">
+      <div class="inputContainer">
+        enter an equation with x<br>
+        <input
+          autofocus
+          id="inputField"
+          oninput="process()"
+          type="text"
+          placeholder="example  x*2=3"
+        >
+      </div>
+    </div>
+    <div id="outputContainer"></div>
+    <script>
+      var inputVal = document.querySelector('#inputField')
+      var outputContainer = document.querySelector('#outputContainer')
+      
+      const process = () => {
+        eq = inputVal.value
+        if(origin != 'null'){
+          if(eq){
+            history.replaceState('','',`/?eq=${eq}`)
+          }else{
+            history.replaceState('','','')
+          }
+        }
+        var ans
+        if((ans = FindX(eq, false)) == 'undefined'){
+          //console.log('swapping')
+          ans = FindX(eq, true)
+        }
+        if(ans){
+          outputContainer.innerHTML = ans
+          outputContainer.style.display = 'inline-block'
+        }else{
+          outputContainer.style.display = 'none'
+        }
+      }
+      
+      const FindX = (eq, swap=false) => {
+        eq = eq.replaceAll('X', 'x')
+        var parts = eq.split('=')
+        var ans
+        if(parts.length == 2 && parts[0].length && parts[1].length){
+          if(swap){
+            var tmp = parts[0]
+            parts[0] = parts[1]
+            parts[1] = tmp
+          }
+          const E = x => {
+            var left = eval(parts[0].replaceAll('x', x))
+            var right = eval(parts[1].replaceAll('x', x))
+            return { ans: Math.round(eval(x)*1e8)/1e8,
+                    diff: left - right}
+          }
+          var tx = 0 , ct = 0, a = {ans: '', diff: ''}
+          var solved, ov=0, b = 1e20, ct2 = 0
+          var ls1 = false, ls2 = true
+          do{
+            a = E(`(${tx})`)
+            solved = !isNaN(a.diff) && !(Math.round(a.diff*1e11)/1e11)
+            if(!solved){
+              if(0)console.log(
+`    tx: ${tx}
+     b: ${b}
+  diff: ${a.diff}
+    ct: ${ct}
+   ct2: ${ct2}
+`)
+              tx += a.diff > 0 ? -b : b
+              ls1 = a.diff > 0
+              if(ls2 != ls1){
+                b/=2
+                ct2++
+              }else{
+                ls2 = ls1
+                ct2 = 0
+                //b/=10
+              }
+            }
+              
+            ct++
+          }while(!solved && ct < 1e3);
+          if(solved) {
+            ans = 'solved: ' + a.ans
+            //console.log(ans)
+          }
+          //ans = a.ans+ ' :  ' + a.diff
+        }else{
+          ans = ''
+        }
+        return ans + ''
+      }
+      
+      var l
+      if((l=location.href.split('eq=')).length>1){
+        inputVal.value = decodeURIComponent(l[1])
+        process()
+      }
+    </script>
+  </body>
+</html>
