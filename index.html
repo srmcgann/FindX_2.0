@@ -100,12 +100,12 @@
           }
         }
         var ans
-        if((ans = FindX(eq, false)) == 'undefined'){
-          //console.log('swapping')
+        if((ans = FindX(eq, false)).result == 'nosol'){
+          // swapping
           ans = FindX(eq, true)
         }
-        if(ans){
-          outputContainer.innerHTML = ans
+        if(ans.result == 'solved'){
+          outputContainer.innerHTML = ans.ans
           outputContainer.style.display = 'inline-block'
         }else{
           outputContainer.style.display = 'none'
@@ -156,15 +156,29 @@
               
             ct++
           }while(!solved && ct < 1e3);
+          var exact, eq = inputVal.value
           if(solved) {
-            ans = 'solved: ' + a.ans
+            a.result = 'solved'
+            ans = Math.round(a.ans*1e7)/1e7
+            exact = Math.round(a.ans*1e7)/1e7 == a.ans ? '' : '~'
+            //ans = 'solved: ' + a.ans
             //console.log(ans)
+            ans = `<span style="">  equation: ${eq}</span>
+<span style="color: #ff08;">reciprocal: x = ${exact}${Math.round((1/ans)*1e6)/1e6}</span>
+<span style="color: #ff0;">    answer: x = ${exact}${ans} </span>          
+`          
+          
+          }else{
+            a.result = 'nosol'
+            ans = `<span style="">  equation: ${eq}</span>
+<span style="color: #ff0;">    answer: no solution</span>`
+          
           }
           //ans = a.ans+ ' :  ' + a.diff
         }else{
           ans = ''
         }
-        return ans + ''
+        return { ans, result: a.result }
       }
       
       var l
